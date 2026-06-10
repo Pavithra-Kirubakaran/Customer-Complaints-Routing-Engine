@@ -85,3 +85,39 @@ Priority: High
 Assigned Team: Finance Team
 SLA: 4 Hours
 ```
+
+## FastAPI Agentic Routing API
+
+### Run the API
+
+```bash
+uvicorn main:app --reload
+```
+
+Open:
+
+```text
+http://localhost:8000/docs
+```
+
+### Sample request
+
+```bash
+curl -X POST "http://localhost:8000/tickets" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "cust-001",
+    "channel": "email",
+    "subject": "Duplicate charge on my card",
+    "message": "I was charged twice for my last order and need a refund."
+  }'
+```
+
+### New files and flow
+
+- `main.py` - FastAPI server entry point
+- `agents/` - supervisor, category, priority, RAG, SLA, routing, monitoring, escalation agents
+- `database.py` - SQLite storage for ticket history and monitoring
+- `data/knowledge_base.json` - local knowledge store for the RAG agent
+
+This new flow preserves the existing `app.py` Streamlit interface while adding a production-ready API layer and agent orchestration.

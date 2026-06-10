@@ -1,0 +1,122 @@
+[
+  {
+    "id": "doc-1",
+    "title": "Duplicate billing and refund policy",
+    "category": "Billing and Payments",
+    "content": "When a customer reports a duplicate payment or double charge, verify the transaction ID in the payment gateway and issue a refund within 4 business hours if the payment was captured twice. Add the ticket to the Billing and Payments queue and set priority to high if the refund is urgent. Always confirm the refund with a confirmation email."
+  },
+  {
+    "id": "doc-2",
+    "title": "Failed payment and retry policy",
+    "category": "Billing and Payments",
+    "content": "If a customer reports a failed payment, check the payment gateway logs for error codes. Common causes include insufficient funds, expired cards, and bank declines. Guide the customer to retry with an updated payment method. If the amount was deducted but the order was not placed, escalate immediately to the Finance Team with high priority."
+  },
+  {
+    "id": "doc-3",
+    "title": "Subscription cancellation and billing cycle",
+    "category": "Billing and Payments",
+    "content": "Subscription cancellations must be processed before the next billing cycle to avoid a charge. If a customer is charged after requesting cancellation, issue a full refund and confirm cancellation in the system. Assign to Finance Team and set medium priority. Document the cancellation timestamp and the charge date."
+  },
+  {
+    "id": "doc-4",
+    "title": "Service outage incident handling",
+    "category": "Service Outages and Maintenance",
+    "content": "Service outages must be treated as critical incidents. Notify the Infrastructure Team immediately and assign the outage ticket to the Service Outages and Maintenance queue. Apply an SLA of 1 hour for first response and status updates every 30 minutes. Escalate automatically if the outage exceeds 2 hours. Post status updates to the status page."
+  },
+  {
+    "id": "doc-5",
+    "title": "Planned maintenance notification handling",
+    "category": "Service Outages and Maintenance",
+    "content": "Planned maintenance windows must be communicated to customers at least 48 hours in advance. If a customer complains about unexpected downtime during a maintenance window, verify the notification was sent and provide the expected restoration time. Route to Infrastructure Team with low priority if maintenance is ongoing and on-schedule."
+  },
+  {
+    "id": "doc-6",
+    "title": "Technical support troubleshooting - login and access issues",
+    "category": "Technical Support",
+    "content": "If the complaint contains login failures, account lockouts, or access denied errors, route the ticket to Technical Support. Verify whether the issue is a password problem, MFA failure, or account suspension. For account lockouts, verify identity before resetting. Apply a 4-hour SLA for high-priority technical incidents involving access to production systems."
+  },
+  {
+    "id": "doc-7",
+    "title": "Technical support - software bugs and configuration errors",
+    "category": "Technical Support",
+    "content": "System errors, application crashes, configuration issues, and API integration failures should be routed to the Technical Support queue. Collect error logs, stack traces, and reproduction steps. Assign high priority if the issue affects production environments. Use a 4-hour SLA. If no fix is available within 24 hours, escalate to Engineering."
+  },
+  {
+    "id": "doc-8",
+    "title": "IT support - hardware and network issues",
+    "category": "IT Support",
+    "content": "Hardware failures, network connectivity problems, VPN access issues, and device provisioning requests are handled by the IT Support team. Collect device details, error codes, and network configuration. High priority if the issue prevents an employee from working. Standard SLA is 4 hours for hardware, 1 hour for network outages."
+  },
+  {
+    "id": "doc-9",
+    "title": "IT support - software installation and license requests",
+    "category": "IT Support",
+    "content": "Software installation requests, license allocations, and version upgrades are low-to-medium priority IT tasks. Route to IT Team. Verify license availability before approval. Expected completion within 24 hours unless a critical business tool is unavailable, in which case escalate to medium priority with a 4-hour SLA."
+  },
+  {
+    "id": "doc-10",
+    "title": "Returns and exchanges policy",
+    "category": "Returns and Exchanges",
+    "content": "Returns and exchanges require capture of the order number, reason for return, and return authorization number. Route complaints to the Operations Team and set priority to medium unless the product is visibly damaged or a safety hazard, in which case set high priority. Confirm refund or exchange timeline with the customer. Expected processing time is 5-7 business days."
+  },
+  {
+    "id": "doc-11",
+    "title": "Damaged or defective product handling",
+    "category": "Returns and Exchanges",
+    "content": "Complaints about damaged, defective, or incorrect products must be prioritized. Request photographic evidence and the order ID. Route to Operations Team with high priority. Issue an immediate replacement or refund if the product is a safety risk. Apply a 4-hour SLA for initial response. Notify the warehouse team if it's a systematic quality issue."
+  },
+  {
+    "id": "doc-12",
+    "title": "Customer service - general complaints and feedback",
+    "category": "Customer Service",
+    "content": "General complaints, negative feedback, and satisfaction concerns are handled by the Customer Success Team. Acknowledge the complaint within 1 hour. Investigate the root cause, offer an apology, and provide a resolution timeline. Escalate to a senior agent if the customer requests to speak to a manager. Priority is typically medium or low."
+  },
+  {
+    "id": "doc-13",
+    "title": "Customer service - delayed or missing orders",
+    "category": "Customer Service",
+    "content": "If a customer reports a delayed or missing order, verify the tracking number with the shipping carrier. If the package is confirmed lost, raise a claim with the carrier and issue a replacement or refund. Route to Customer Success Team with medium priority. Provide the customer with an estimated resolution within 48 hours."
+  },
+  {
+    "id": "doc-14",
+    "title": "Product support - feature questions and usage help",
+    "category": "Product Support",
+    "content": "Complaints or questions about product features, how-to guidance, and best practices should be routed to the Product Team. Provide documentation links when available. If a feature is missing or broken, create a bug report and link it to the ticket. Priority is low unless the product is completely unusable, in which case set medium priority with a 24-hour SLA."
+  },
+  {
+    "id": "doc-15",
+    "title": "Product support - integration and compatibility issues",
+    "category": "Product Support",
+    "content": "Integration failures with third-party tools, API compatibility issues, and webhook configuration errors are handled by the Product Team in coordination with Technical Support. Collect API version, error response, and integration configuration. Set medium to high priority depending on business impact. Document findings in the product known-issues tracker."
+  },
+  {
+    "id": "doc-16",
+    "title": "Sales and pre-sales inquiry routing",
+    "category": "Sales and Pre-Sales",
+    "content": "Sales inquiries, demo requests, and pre-sales questions should be moved to the Sales Team and responded to within 2 business hours. Pre-sales requests should be answered with pricing, feature comparisons, and onboarding information. Inbound web chat and email leads should be tracked in the CRM. Priority is medium for active leads, low for general inquiries."
+  },
+  {
+    "id": "doc-17",
+    "title": "Sales - contract renewal and upsell opportunities",
+    "category": "Sales and Pre-Sales",
+    "content": "Contract renewal requests and upsell opportunities should be handled proactively by the Sales Team. If a customer indicates intent to cancel due to pricing, immediately route to a senior account executive. Set high priority for accounts over a certain ARR threshold. Document the reason for potential churn and the proposed resolution."
+  },
+  {
+    "id": "doc-18",
+    "title": "Human resources - employee complaints and HR inquiries",
+    "category": "Human Resources",
+    "content": "HR-related complaints including workplace conduct, payroll discrepancies, benefits questions, and leave requests are routed to the HR Team. These tickets must be handled with strict confidentiality. Do not share HR tickets with non-HR personnel. Set medium priority for general inquiries and high priority for conduct or harassment complaints, which must be escalated immediately."
+  },
+  {
+    "id": "doc-19",
+    "title": "General inquiry routing",
+    "category": "General Inquiry",
+    "content": "General inquiries that do not fit any specific category are handled by the Customer Success Team. These include questions about business hours, contact information, product availability, and general company information. Priority is low. Respond within 24 hours. If the inquiry reveals a more specific issue, re-categorize the ticket appropriately."
+  },
+  {
+    "id": "doc-20",
+    "title": "Escalation policy and SLA breach handling",
+    "category": "General Inquiry",
+    "content": "Any ticket that breaches its SLA must be immediately escalated to the relevant team lead. High priority tickets breaching the 4-hour SLA, and critical tickets breaching the 1-hour SLA, must be flagged for executive review. Escalated tickets must include a root cause note and a revised resolution timeline. The escalation agent should automatically flag these cases."
+  }
+]
