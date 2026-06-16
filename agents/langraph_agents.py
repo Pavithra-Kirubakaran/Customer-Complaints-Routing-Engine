@@ -9,9 +9,12 @@ from langchain_core.messages import HumanMessage, SystemMessage  # used in _gene
 from langgraph.graph import StateGraph, END
 
 from agents.state import AgentState
+from guardrails.pii import redact_pii
 from agents.tools import (
     classify_category,
+    classify_category_with_confidence,
     predict_priority,
+    predict_priority_with_confidence,
     search_knowledge_base,
     determine_sla,
     route_ticket,
@@ -94,7 +97,13 @@ def _generate_text(prompt: str) -> str:
     if not hasattr(llm, "generate"):
         raise RuntimeError("ChatGoogleGenerativeAI requires the generate() method.")
 
-    system_message = SystemMessage(content="You are a helpful complaint routing assistant.")
+    system_message = SystemMessage(
+        content=(
+            "You are a helpful complaint routing assistant. "
+            "Never repeat, invent, or request personal contact details such as "
+            "email addresses, phone numbers, payment card numbers, or government IDs."
+        )
+    )
     human_message = HumanMessage(content=prompt)
     response = llm.generate([[system_message, human_message]])
 
@@ -143,29 +152,40 @@ def context_agent(state: AgentState) -> AgentState:
     prompt = (
         "Summarize this customer complaint into a concise context of what the issue is, "
         "including any product, billing, support, or outage details. "
-        "Return a short paragraph.\n\n"
+        "Do not include personal contact details. Return a short paragraph.\n\n"
         f"Complaint:\n{state['message']}"
     )
 
-    return {"context": _generate_text(prompt).strip()}
+    return {"context": redact_pii(_generate_text(prompt).strip())}
 
 
 def category_agent(state: AgentState) -> AgentState:
     """Classify the complaint category using the trained model."""
     text = state.get("context") or state["message"]
-    return {"category": _call_tool(classify_category, text)}
+    category, confidence = classify_category_with_confidence(text)
+    return {"category": category, "category_confidence": confidence}
 
 
 def priority_agent(state: AgentState) -> AgentState:
     """Predict the complaint priority using the trained model."""
     text = state.get("context") or state["message"]
-    return {"priority": _call_tool(predict_priority, text)}
+    priority, confidence = predict_priority_with_confidence(text)
+    return {"priority": priority, "priority_confidence": confidence}
 
 
 def rag_agent(state: AgentState) -> AgentState:
     """Retrieve relevant support knowledge based on complaint context."""
+    from agents.rag_store import search_with_guardrails
+
     query_text = state.get("context") or state["message"]
-    return {"rag_context": _call_tool(search_knowledge_base, query_text)}
+    rag_result = search_with_guardrails(query_text, n_results=3)
+    return {
+        "rag_context": rag_result["context"],
+        "rag_sources": rag_result["sources"],
+        "rag_kb_version": rag_result["kb_version"],
+        "rag_guardrail_triggered": rag_result["rag_guardrail_triggered"],
+        "accepted_rag_count": rag_result["accepted_count"],
+    }
 
 
 def sla_agent(state: AgentState) -> AgentState:
@@ -218,6 +238,12 @@ def finalize_agent(state: AgentState) -> AgentState:
         "routing_note": state.get("routing_note") or "Standard routing applied.",
         "rag_context": state.get("rag_context") or "No relevant context retrieved.",
         "escalation_required": bool(state.get("escalation_required")),
+        "category_confidence": state.get("category_confidence"),
+        "priority_confidence": state.get("priority_confidence"),
+        "rag_sources": state.get("rag_sources") or [],
+        "rag_kb_version": state.get("rag_kb_version"),
+        "rag_guardrail_triggered": bool(state.get("rag_guardrail_triggered")),
+        "accepted_rag_count": state.get("accepted_rag_count", 0),
     }
 
 

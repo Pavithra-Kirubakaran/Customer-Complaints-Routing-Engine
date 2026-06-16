@@ -80,42 +80,77 @@ def get_collection() -> chromadb.Collection:
     return collection
 
 
-def search(query: str, n_results: int = 3) -> str:
+def search_with_guardrails(
+    query: str,
+    n_results: int = 3,
+    min_similarity: float | None = None,
+) -> dict:
     """
-    Perform a semantic similarity search over the knowledge base.
-
-    Parameters
-    ----------
-    query     : Natural-language query string (usually the complaint context).
-    n_results : Number of top documents to return (default 3).
-
-    Returns
-    -------
-    A formatted string with the top-k matching documents, ready for injection
-    into the routing agent's prompt.
+    Perform guarded semantic search with similarity floor and source attribution.
     """
+    from guardrails.rag import DEFAULT_N_RESULTS, apply_rag_guardrails
+
     if not query or not query.strip():
-        return "No query provided — knowledge base search skipped."
+        from guardrails.rag import get_kb_version
+
+        return {
+            "context": "No query provided — knowledge base search skipped.",
+            "sources": [],
+            "kb_version": get_kb_version(),
+            "match_count": 0,
+            "accepted_count": 0,
+            "min_similarity": min_similarity,
+            "rag_guardrail_triggered": False,
+        }
 
     collection = get_collection()
+    limit = min(n_results or DEFAULT_N_RESULTS, collection.count())
+    if limit == 0:
+        from guardrails.rag import get_kb_version
+
+        return {
+            "context": "No relevant knowledge context could be retrieved.",
+            "sources": [],
+            "kb_version": get_kb_version(),
+            "match_count": 0,
+            "accepted_count": 0,
+            "min_similarity": min_similarity,
+            "rag_guardrail_triggered": True,
+        }
 
     results = collection.query(
         query_texts=[query],
-        n_results=min(n_results, collection.count()),
+        n_results=limit,
         include=["documents", "metadatas", "distances"],
     )
 
     docs = results.get("documents", [[]])[0]
     metas = results.get("metadatas", [[]])[0]
     distances = results.get("distances", [[]])[0]
+    ids = results.get("ids", [[]])[0]
 
     if not docs:
-        return "No relevant knowledge context could be retrieved."
+        from guardrails.rag import get_kb_version
 
-    lines: list[str] = []
-    for doc_text, meta, dist in zip(docs, metas, distances):
-        similarity = round(1 - dist, 3)   # cosine distance → cosine similarity
-        title = meta.get("title", "Unknown")
-        lines.append(f"[{title}] (similarity: {similarity})\n{doc_text}")
+        return {
+            "context": "No relevant knowledge context could be retrieved.",
+            "sources": [],
+            "kb_version": get_kb_version(),
+            "match_count": 0,
+            "accepted_count": 0,
+            "min_similarity": min_similarity,
+            "rag_guardrail_triggered": True,
+        }
 
-    return "\n\n---\n\n".join(lines)
+    return apply_rag_guardrails(
+        docs,
+        metas,
+        ids,
+        distances,
+        min_similarity=min_similarity,
+    )
+
+
+def search(query: str, n_results: int = 3) -> str:
+    """Backward-compatible text-only RAG search."""
+    return search_with_guardrails(query, n_results=n_results)["context"]
