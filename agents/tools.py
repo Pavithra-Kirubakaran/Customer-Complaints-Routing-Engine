@@ -13,8 +13,46 @@ from guardrails.constants import (
 
 # Load models
 MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
-queue_model = joblib.load(MODELS_DIR / "queue_model.pkl")
-priority_model = joblib.load(MODELS_DIR / "priority_model.pkl")
+
+# Prefer ONNX models when available (fall back to joblib pickles)
+try:
+    from agents.onnx_inference import ONNXSequenceClassifier
+except Exception:
+    ONNXSequenceClassifier = None
+
+
+def _load_model(preferred_dir: Path, pkl_path: Path):
+    """Try to load ONNX model from preferred_dir, otherwise load joblib from pkl_path."""
+    # look for quantized ONNX first
+    if ONNXSequenceClassifier and preferred_dir:
+        if (preferred_dir / "model.quant.onnx").exists() or (preferred_dir / "model.onnx").exists():
+            try:
+                return ONNXSequenceClassifier(preferred_dir)
+            except Exception:
+                pass
+
+    # fallback to joblib
+    try:
+        return joblib.load(pkl_path)
+    except Exception:
+        return None
+
+
+# queue model: prefer ONNX (transformer) then fallback to old pickle
+QUEUE_ONNX_DIR = Path(__file__).resolve().parent.parent / "models_v2" / "final_distilbert_model"
+queue_model = _load_model(QUEUE_ONNX_DIR, MODELS_DIR / "queue_model.pkl")
+
+# priority model: keep using the existing sklearn pickle (smaller, faster). If missing,
+# try ONNX as a fallback (only used when user didn't provide a pickle).
+try:
+    priority_model = joblib.load(MODELS_DIR / "priority_model.pkl")
+except Exception:
+    priority_model = None
+    if ONNXSequenceClassifier and QUEUE_ONNX_DIR:
+        try:
+            priority_model = ONNXSequenceClassifier(QUEUE_ONNX_DIR)
+        except Exception:
+            priority_model = None
 
 
 def _clean_text(text: str) -> str:

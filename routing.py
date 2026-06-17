@@ -1,7 +1,38 @@
 import joblib
 
-queue_model = joblib.load("models/queue_model.pkl")
-priority_model = joblib.load("models/priority_model.pkl")
+import os
+from pathlib import Path
+
+# Try ONNX-based classifier first, fall back to joblib pickles
+try:
+    from agents.onnx_inference import ONNXSequenceClassifier
+except Exception:
+    ONNXSequenceClassifier = None
+
+MODELS_DIR = Path("models")
+QUEUE_ONNX_DIR = Path("models_v2") / "final_distilbert_model"
+try:
+    # prefer ONNX-based queue classifier; keep priority as pickle
+    if ONNXSequenceClassifier and QUEUE_ONNX_DIR.exists():
+        try:
+            queue_model = ONNXSequenceClassifier(QUEUE_ONNX_DIR)
+        except Exception:
+            queue_model = joblib.load(MODELS_DIR / "queue_model.pkl")
+    else:
+        queue_model = joblib.load(MODELS_DIR / "queue_model.pkl")
+
+    # priority: prefer pickle
+    try:
+        priority_model = joblib.load(MODELS_DIR / "priority_model.pkl")
+    except Exception:
+        # fallback to ONNX queue classifier (if present) — only if no pickle
+        if ONNXSequenceClassifier and QUEUE_ONNX_DIR.exists():
+            priority_model = ONNXSequenceClassifier(QUEUE_ONNX_DIR)
+        else:
+            raise
+except Exception:
+    # final fallback: re-raise so calling code notices failure
+    raise
 
 TEAM_MAPPING = {
     "Technical Support": "Tech Team",
